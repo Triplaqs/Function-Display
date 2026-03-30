@@ -35,6 +35,8 @@ set(IMGUI_SOURCES
 
 # Create an executable named "out" that will depend on the source file src/main.cpp
 add_executable(out
+    src/mesh.cpp
+    src/function.cpp
     src/main.cpp
     ${IMGUI_SOURCES}
 )

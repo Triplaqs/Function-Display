@@ -165,7 +165,6 @@ int main(int argc, char* argv[]){
     shaderProgram = glCreateProgram();
 
     //attache les objets au programme
-    //glAttachShader(shaderProgram, faceShader);
     //essayons d'en garder qu'un seul
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
@@ -193,27 +192,26 @@ int main(int argc, char* argv[]){
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //.data() pour avoir les données comme float*
-    //glBufferData(GL_ARRAY_BUFFER, face.size() * sizeof(float), face.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surf.size(), surf.triangles.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     
-
-    //pour le dessin
     /*
-    int indexCount = sizeof(indices) / sizeof(unsigned int);
-
+    //pour le dessin
+    int indexCount = sizeof(surf.vertices) / sizeof(unsigned int);
+    int n = indexCount;
     float cx = 0.0f, cy = 0.0f, cz = 0.0f;
     float minx = 1e9f, miny = 1e9f, minz = 1e9f;
     float maxx = -1e9f, maxy = -1e9f, maxz = -1e9f;
     for (int i = 0; i < n; ++i) {
-        float x = face[3*i + 0];
-        float y = face[3*i + 1];
-        float z = face[3*i + 2];
+        float x = surf.vertices[3*i + 0];
+        float y = surf.vertices[3*i + 1];
+        float z = surf.vertices[3*i + 2];
         cx += x; cy += y; cz += z;
         minx = std::min(minx, x); miny = std::min(miny, y); minz = std::min(minz, z);
         maxx = std::max(maxx, x); maxy = std::max(maxy, y); maxz = std::max(maxz, z);
@@ -267,7 +265,6 @@ int main(int argc, char* argv[]){
             facestruct.set_neutre();
             facestruct.reset_phrase();
             sent = false;
-            //ask_string(); //plus besoin depuis ImGui
         }*/
 
         //dessin du triangle
@@ -297,13 +294,15 @@ int main(int argc, char* argv[]){
         //glUniform3f(loc_min, minx, miny, minz);
         //glUniform3f(loc_max, maxx, maxy, maxz);
         glBindVertexArray(VAO);
-        glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float),
-             &surf.vertices[0], GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        //glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_STATIC_DRAW);
+
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, surf.size() * sizeof(float), surf.vertices.data());
 
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //essaye GL_FILL
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        //glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, surf.size(), GL_UNSIGNED_INT, 0);
         
     /*
     // 3.5. IMGUI (Interface par dessus la 3D)

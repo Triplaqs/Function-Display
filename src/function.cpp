@@ -8,7 +8,7 @@ float f(float x, float y) {
 }
 
 //Fonction à effet de bord sur le monoïde Surf (dans mesh.h/mesh.cpp) : calcule les vertices
-void calculate(Glintint nbX = 100, int nbY = 100){
+void calculate(int nbX, int nbY){
     surf.clear();
     surf.nX = nbX;
     surf.nY = nbY;
@@ -31,7 +31,7 @@ void calculate(Glintint nbX = 100, int nbY = 100){
             surf.triangles.push_back(i * nbY + j);
             surf.triangles.push_back((i + 1) * nbY + j);
             surf.triangles.push_back((i + 1) * nbY + (j + 1));
-            surf.triangles.push_back(i * nbY + j;);
+            surf.triangles.push_back(i * nbY + j);
             surf.triangles.push_back((i + 1) * nbY + (j + 1));
             surf.triangles.push_back(i * nbY + (j + 1));
         }

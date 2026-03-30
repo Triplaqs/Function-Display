@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 //includes du projet
+#include "utils.h"
 #include "mesh.h"
 #include "function.h"
 #include "camera.h"

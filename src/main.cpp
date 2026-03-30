@@ -31,10 +31,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+//Affichage ou non de la fenêtre IMGUI (activer/désactiver avec 'H')
+bool show_ui = true;
+
 
 //GESTION INPUTS
 //gestion input clavier : ici, si KEY_ESCAPE préssée
-void processInput(GLFWwindow *window, bool* moveRight, bool* moveLeft, bool* moveUp, bool* moveDown, bool* pressR, bool* pressA, bool* pressO){
+void processInput(GLFWwindow *window, bool* moveRight, bool* moveLeft, bool* moveUp, bool* moveDown, bool* pressR, bool* pressA, bool* pressO, bool* pressH){
+     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+        glfwSetWindowShouldClose(window, true);
+    }
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
@@ -45,6 +51,7 @@ void processInput(GLFWwindow *window, bool* moveRight, bool* moveLeft, bool* mov
     *pressR = (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS);
     *pressA = (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS);
     *pressO = (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS);
+    *pressH = (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS);
 }
 
 int main(int argc, char* argv[]){
@@ -83,15 +90,19 @@ int main(int argc, char* argv[]){
     //préciser que l'ont veut qu'il resize régulièrement
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    /*
-    // Setup Dear ImGui context
+    //Caméra : callback pour la position de la souris
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    
+    //Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");*/
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     
 //DEF DES SHADERS
@@ -197,7 +208,7 @@ int main(int argc, char* argv[]){
     glBufferData(GL_ARRAY_BUFFER, surf.vertices.size() * sizeof(float), surf.vertices.data(), GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surf.triangles.size(), surf.triangles.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surf.triangles.size()* sizeof(unsigned int), surf.triangles.data(), GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -205,7 +216,7 @@ int main(int argc, char* argv[]){
     
     
     //pour le dessin
-    int indexCount = sizeof(surf.vertices) / sizeof(unsigned int);
+    int indexCount = surf.vertices.size() / 3;
     int n = indexCount;
     float cx = 0.0f, cy = 0.0f, cz = 0.0f;
     float minx = 1e9f, miny = 1e9f, minz = 1e9f;
@@ -232,6 +243,17 @@ int main(int argc, char* argv[]){
     while(!glfwWindowShouldClose(window)){
         //mesure du temps pour animation
         float currentTime = glfwGetTime();
+        
+        //camera :
+        // 1. Calcul de la position de la caméra sur la sphère
+        glm::vec3 pos;
+        pos.x = camera.cameraTarget.x + camera.cameraDistance * cos(glm::radians(camera.pitch)) * cos(glm::radians(camera.yaw));
+        pos.y = camera.cameraTarget.y + camera.cameraDistance * sin(glm::radians(camera.pitch));
+        pos.z = camera.cameraTarget.z + camera.cameraDistance * cos(glm::radians(camera.pitch)) * sin(glm::radians(camera.yaw));
+
+        // 2. Création de la matrice View
+        glm::mat4 view = glm::lookAt(pos, camera.cameraTarget, glm::vec3(0.0f, 1.0f, 0.0f)); //On modifie là où regarde la caméra
+
 
 //P1 : nettoyage
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -247,7 +269,8 @@ int main(int argc, char* argv[]){
         //Set Phonemes pour tester l'anim ;)
         bool pressA = false;
         bool pressO = false;
-        processInput(window, &moveRight, &moveLeft, &moveUp, &moveDown, &pressR, &pressA, &pressO);
+        bool pressH = false;
+        processInput(window, &moveRight, &moveLeft, &moveUp, &moveDown, &pressR, &pressA, &pressO, &pressH);
 
 
 //P3 : gestion du render
@@ -263,10 +286,10 @@ int main(int argc, char* argv[]){
             camera.viewz -= 0.05; 
         }
         if(moveRight){   
-            camera.yaw += 1.0; 
+            camera.viewx += 0.05; 
         }
         if(moveLeft){   
-            camera.yaw -= 1.0; 
+            camera.viewx -= 0.05; 
         }
         if(pressR){   
             camera.reset(); 
@@ -275,18 +298,35 @@ int main(int argc, char* argv[]){
 
         //dessin du triangle
         glUseProgram(shaderProgram);
-        
+
+
         //glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 model = glm::mat4(1.0f);
         //centrer, tourner, scale (ordre)
         model = glm::scale(model, glm::vec3(fitScale*0.5f)); // Utilise fitScale calculé 
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //axe de profil
-        model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //flip le masque
+        //model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //flip le masque
         model = glm::translate(model, glm::vec3(-cx, -cy, -cz)); // Centre le masque
-        glm::mat4 view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
+        view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
         //glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -2.0f, 2.0f), glm::vec3(0.5f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //position de la cam, vers où elle regarde, up vecteur
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        
+        /*
+        //glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 model = glm::mat4(1.0f);
+        //rotation car le masque est vers le haut dans Blender
+        //centrer, tourner, scale (ordre)
+        model = glm::scale(model, glm::vec3(fitScale*0.5f)); // Utilise fitScale calculé 
+        //le masque était à l'envers dans Blender, on l'a remis à l'endroit depuis
+        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //axe de profil
+        //model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //flip la surface
+        model = glm::translate(model, glm::vec3(-cx, -cy, -cz)); // Centre la surface
+        //Utilisation plus tôt, on enlève la définition (glm::mat4 ...)
+        //view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);*/
+
 
         // Envoie au shader
         unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
@@ -305,64 +345,98 @@ int main(int argc, char* argv[]){
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //essaye GL_FILL
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        glDrawElements(GL_TRIANGLES, surf.vertices.size(), GL_UNSIGNED_INT, 0);
-        calculate(100, 100);
+        glDrawElements(GL_TRIANGLES, surf.triangles.size(), GL_UNSIGNED_INT, 0);
+        //calculate(100, 100);
 
         //glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_STATIC_DRAW);
 
         glBufferSubData(GL_ARRAY_BUFFER, 0, surf.vertices.size() * sizeof(float), surf.vertices.data());
-    /*
-    // 3.5. IMGUI (Interface par dessus la 3D)
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
 
-        // -- Positionnement de la fenêtre (Point 1) --
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImVec2 work_pos = viewport->Pos;
-        ImVec2 work_size = viewport->Size;
-        ImVec2 window_pos, window_pos_pivot;
-        
-        // On centre horizontalement (x = 0.5) et on ancre en bas (y = 1.0)
-        window_pos.x = work_pos.x + work_size.x * 0.5f;
-        window_pos.y = work_pos.y + work_size.y - 50.0f; // 50px de marge en bas
-        window_pos_pivot.x = 0.5f;
-        window_pos_pivot.y = 1.0f;
-        
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-        ImGui::SetNextWindowSize(ImVec2(400, 100)); // Taille fixe pour être joli
-
-        // -- Contenu de la fenêtre --
-        ImGui::Begin("Input Panel", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove); // NoDecoration retire la barre de titre bleue
-
-        ImGui::Text("Write a sentence:");
-        
-        // Point 2 : Input Text
-        // "##Input" cache le label à gauche, on utilise Text() au dessus à la place
-        // ImGui_InputTextFlags_EnterReturnsTrue permet de valider avec la touche ENTRÉE aussi
-        bool enterPressed = ImGui::InputText("##Input", inputBuffer, IM_ARRAYSIZE(inputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-        
-        // Point 3 : Bouton qui remplace le terminal
-        ImGui::SameLine(); // Met le bouton à droite du champ texte
-        if (ImGui::Button("Read") || enterPressed) {
-            // Convertit le char* en string c++
-            std::string sentence0(inputBuffer);
-            sentence = sentence0;
-            sent = true;
-            
-            // Appelle de la fonction de traitement 
-            printf("Sentence sent: %s\n", sentence.c_str()); 
-            
-            // Remettre le focus sur l'input après clic (optionnel)
-            ImGui::SetKeyboardFocusHere(-1); 
+        if(edited){
+            calculate(100, 100);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, surf.vertices.size() * sizeof(float), surf.vertices.data());
+            edited = false;
+        }
+        //Gestion de pression des touches :
+        if(startTime >= 0.0f){
+            //Fragmentation du cooldown
+            t_press = (currentTime - startTime)/cooldown;
+            //Fin du cooldown
+            if (t_press >= 1.0f){
+                t_press = 1.0f;
+                startTime = -1.0f;
+            }
         }
 
-        ImGui::End();
+        //pour cacher/afficher la fenêtre IMGUI 
+        if (pressH && startTime < 0.0f) {    
+            show_ui = !show_ui; // 'H' pour Hide
+            startTime = currentTime; // Démarre le cooldown
+        }
+    
+    // 3.5. IMGUI (Interface par dessus la 3D)
+        if(show_ui){
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 
-        // Rendu ImGui
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());*/
+            // -- Positionnement de la fenêtre (Point 1) --
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImVec2 work_pos = viewport->Pos;
+            ImVec2 work_size = viewport->Size;
+            ImVec2 window_pos, window_pos_pivot;
 
+            // On centre horizontalement (x = 0.5) et on ancre en bas (y = 1.0)
+            window_pos.x = work_pos.x + work_size.x * 0.5f;
+            window_pos.y = work_pos.y + work_size.y - 50.0f; // 50px de marge en bas
+            window_pos_pivot.x = 0.5f;
+            window_pos_pivot.y = 1.0f;
+
+            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+            ImGui::SetNextWindowSize(ImVec2(400, 150)); // Taille fixe pour être joli
+
+            // -- Contenu de la fenêtre --
+            ImGui::Begin("Input Panel", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove); // NoDecoration retire la barre de titre bleue
+
+            ImGui::Text("Enter a x-range starting value:");
+
+            // Point 2 : Input Text
+            // "##Input" cache le label à gauche, on utilise Text() au dessus à la place
+            // ImGui_InputTextFlags_EnterReturnsTrue permet de valider avec la touche ENTRÉE aussi
+            bool enterPressed = ImGui::InputText("##Input", xminIB, IM_ARRAYSIZE(xminIB), ImGuiInputTextFlags_EnterReturnsTrue);   
+            ImGui::Text("Enter a x-range ending value:"); 
+            bool enterPressed2 = ImGui::InputText("##Input2", xmaxIB, IM_ARRAYSIZE(xmaxIB), ImGuiInputTextFlags_EnterReturnsTrue);
+            ImGui::Text("Enter a y-range starting value:");
+            bool enterPressed3 = ImGui::InputText("##Input3", yminIB, IM_ARRAYSIZE(yminIB), ImGuiInputTextFlags_EnterReturnsTrue);  
+            ImGui::Text("Enter a y-range ending value:");  
+            bool enterPressed4 = ImGui::InputText("##Input4", ymaxIB, IM_ARRAYSIZE(ymaxIB), ImGuiInputTextFlags_EnterReturnsTrue);
+            // Point 3 : Bouton qui remplace le terminal
+            //ImGui::SameLine(); // Met le bouton à droite du champ texte
+            if (ImGui::Button("Edit") || enterPressed) {
+                //position boutton
+                // Convertit le char* en float c++
+                std::string sentence0(xminIB);
+                minx = (float)atof(sentence0.c_str());          
+                std::string sentence1(xmaxIB);
+                maxx = (float)atof(sentence1.c_str());
+                std::string sentence2(yminIB);
+                miny = (float)atof(sentence2.c_str());
+                std::string sentence3(ymaxIB);
+                maxy = (float)atof(sentence3.c_str());
+                // Appelle de la fonction de traitement 
+                printf("(x, y) range set to : [%f, %f] x [%f, %f]\n", minx, maxx, miny, maxy); 
+                edited = true;
+
+                // Remettre le focus sur l'input après clic (optionnel)
+                ImGui::SetKeyboardFocusHere(-1); 
+            }
+
+            ImGui::End();
+
+            // Rendu ImGui
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
     //P4 : fin render loop
         //met les pixels en couleur
         glfwSwapBuffers(window);
@@ -370,11 +444,11 @@ int main(int argc, char* argv[]){
         glfwPollEvents();
         //Nettoyage ImGui
     }
-    /*
+    
     //Nettoyage ImGui
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();*/
+    ImGui::DestroyContext();
 
     printf("Function display window closed\n");
     glfwTerminate();

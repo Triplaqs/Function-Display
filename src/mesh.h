@@ -1,6 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "utils.h"
 #include "mesh.h"
 #include <vector>
 

@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 //headers
+#include "utils.h"
 #include "mesh.h"
 #include "function.h"
 #include "camera.h"

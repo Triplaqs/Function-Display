@@ -15,6 +15,12 @@ typedef struct Surf{
     std::vector<unsigned int> triangles;
     std::vector<float> normals;
     std::vector<float> colors;
+    void clear(){
+        vertices.clear();
+        triangles.clear();
+        normals.clear();
+        colors.clear();
+    }
 } Surf;
 
 extern Surf surf;

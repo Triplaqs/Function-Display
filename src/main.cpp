@@ -24,6 +24,7 @@
 //headers
 #include "mesh.h"
 #include "function.h"
+#include "camera.h"
 
 //GESTION FENETRE
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -191,17 +192,18 @@ int main(int argc, char* argv[]){
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    calculate(100, 100);
     //.data() pour avoir les données comme float*
-    glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, surf.vertices.size() * sizeof(float), surf.vertices.data(), GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surf.size(), surf.triangles.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, surf.triangles.size(), surf.triangles.data(), GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     
-    /*
+    
     //pour le dessin
     int indexCount = sizeof(surf.vertices) / sizeof(unsigned int);
     int n = indexCount;
@@ -252,7 +254,7 @@ int main(int argc, char* argv[]){
 
         //Attention : au choix du programme Shader utilisé
 
-        /*
+        
         //réaction inputs
         if(moveUp){
             camera.viewz += 0.05;
@@ -260,50 +262,55 @@ int main(int argc, char* argv[]){
         if(moveDown){   
             camera.viewz -= 0.05; 
         }
+        if(moveRight){   
+            camera.yaw += 1.0; 
+        }
+        if(moveLeft){   
+            camera.yaw -= 1.0; 
+        }
         if(pressR){   
             camera.reset(); 
-            facestruct.set_neutre();
-            facestruct.reset_phrase();
-            sent = false;
-        }*/
+            //autres trucs à reset
+        }
 
         //dessin du triangle
         glUseProgram(shaderProgram);
-        /*
+        
         //glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 model = glm::mat4(1.0f);
-        //rotation car le masque est vers le haut dans Blender
         //centrer, tourner, scale (ordre)
         model = glm::scale(model, glm::vec3(fitScale*0.5f)); // Utilise fitScale calculé 
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //axe de profil
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //axe de profil
         model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //flip le masque
         model = glm::translate(model, glm::vec3(-cx, -cy, -cz)); // Centre le masque
         glm::mat4 view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);*/
+        //glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -2.0f, 2.0f), glm::vec3(0.5f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //position de la cam, vers où elle regarde, up vecteur
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
         // Envoie au shader
-        //unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-        //unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        //unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
-        /*
+        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
+        
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));*/
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         //glUniform3f(loc_min, minx, miny, minz);
         //glUniform3f(loc_max, maxx, maxy, maxz);
+
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        //glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_STATIC_DRAW);
-
-        //glBufferSubData(GL_ARRAY_BUFFER, 0, surf.size() * sizeof(float), surf.vertices.data());
-
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //essaye GL_FILL
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); 
-        glDrawElements(GL_TRIANGLES, surf.size(), GL_UNSIGNED_INT, 0);
-        
+        glDrawElements(GL_TRIANGLES, surf.vertices.size(), GL_UNSIGNED_INT, 0);
+        calculate(100, 100);
+
+        //glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float), surf.vertices.data(), GL_STATIC_DRAW);
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, surf.vertices.size() * sizeof(float), surf.vertices.data());
     /*
     // 3.5. IMGUI (Interface par dessus la 3D)
         ImGui_ImplOpenGL3_NewFrame();

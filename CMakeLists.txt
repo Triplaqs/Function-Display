@@ -37,6 +37,7 @@ set(IMGUI_SOURCES
 add_executable(out
     src/mesh.cpp
     src/function.cpp
+    src/camera.cpp
     src/main.cpp
     ${IMGUI_SOURCES}
 )

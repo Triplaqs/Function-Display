@@ -236,7 +236,7 @@ int main(int argc, char* argv[]){
     float maxRange = std::max(rangeX, std::max(rangeY, rangeZ));
     float fitScale = (maxRange > 0.0f) ? (2.0f / maxRange) : 1.0f; // mappe la plus grande étendue sur [-1,1]*/
 
-   
+    camera.reset();
 
 //render loop (maintient la fenêtre ouverte, une loop = une frame)
     //se divise en 4 parties : nettoyage, input, render puis cloture
@@ -299,7 +299,6 @@ int main(int argc, char* argv[]){
         //dessin du triangle
         glUseProgram(shaderProgram);
 
-
         //glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 model = glm::mat4(1.0f);
         //centrer, tourner, scale (ordre)
@@ -308,7 +307,7 @@ int main(int argc, char* argv[]){
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //axe de profil
         //model = glm::rotate(model, glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //flip le masque
         model = glm::translate(model, glm::vec3(-cx, -cy, -cz)); // Centre le masque
-        view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
+        //view = glm::lookAt(glm::vec3(camera.viewx, camera.viewy, camera.viewz), glm::vec3(0, -0.18, 0), glm::vec3(0, 1, 0)); //position de la cam, vers où elle regarde, up vecteur
         //glm::mat4 view = glm::lookAt(glm::vec3(2.0f, -2.0f, 2.0f), glm::vec3(0.5f, 0.5f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)); //position de la cam, vers où elle regarde, up vecteur
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         

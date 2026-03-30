@@ -22,11 +22,25 @@
 #include <algorithm>
 #include <iterator>
 //headers
+#include "mesh.h"
+#include "function.h"
 
 //GESTION FENETRE
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
+
+//Fonction de R2 dans R (surface) d'essai:
+float f(float x, float y) {
+    return x*y;
+}
+
+//Fonction à effet de bord sur le monoïde Surf (dans mesh.h/mesh.cpp) : calcule les vertices
+void calculate(int nbX = 100, int nbY = 100){
+
+}
+
+
 
 
 //GESTION INPUTS
@@ -199,6 +213,8 @@ int main(int argc, char* argv[]){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    
+
     //pour le dessin
     /*
     int indexCount = sizeof(indices) / sizeof(unsigned int);
@@ -282,9 +298,9 @@ int main(int argc, char* argv[]){
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);*/
 
         // Envoie au shader
-        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
+        //unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+        //unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        //unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
         /*
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
@@ -368,6 +384,3 @@ int main(int argc, char* argv[]){
     glfwTerminate();
     return 0;
 }
-
-
-//322

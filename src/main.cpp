@@ -297,6 +297,8 @@ int main(int argc, char* argv[]){
         //glUniform3f(loc_min, minx, miny, minz);
         //glUniform3f(loc_max, maxx, maxy, maxz);
         glBindVertexArray(VAO);
+        glBufferData(GL_ARRAY_BUFFER, surf.size() * sizeof(float),
+             &surf.vertices[0], GL_STATIC_DRAW);
 
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //essaye GL_FILL

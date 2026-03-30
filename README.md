@@ -3,5 +3,6 @@ The purpose of this repository is to display mathematical functions as surfaces 
 ```math 
 \usepackage{amsmath, amssymb}
 f : \mathbb(R)^2 \to \mathbb(R)
-.
+```
+
 

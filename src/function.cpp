@@ -13,8 +13,8 @@ bool edited = false;
 ///////////////////////////////////////////// FUNCTION ///////////////////////////////////////////////// //voir si std::function<> peut apporter ?
 //Fonction de R2 dans R (surface) d'essai:
 float f(float x, float y) {
-    if(x==0.0f && y==0.0f){
-        return 1.0f;
+    if(x*x<=0.2f || y*y<=0.2f){
+        return 10;
     }
     else{
         return (x + y)/(x*y);

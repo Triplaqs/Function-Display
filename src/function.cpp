@@ -10,18 +10,21 @@ char xminIB[256] = "-1.0"; char xmaxIB[256] = "1.0"; char yminIB[256] = "-1.0"; 
 //Variale qui tient compte d'une redéfinition :
 bool edited = false;
 
+///////////////////////////////////////////// FUNCTION ///////////////////////////////////////////////// //voir si std::function<> peut apporter ?
 //Fonction de R2 dans R (surface) d'essai:
 float f(float x, float y) {
-    return x*y;
+    return x*y; //exemple de fonction à singularité en (0,0) : on peut faire mieux, mais c'est pour tester les dérivées
 }
 
 //transforme [0, nY] en [y_min, y_max] où miny et maxy globaux
 float rerangex(float x) {
-    return x_min + (x - 0.0f) * (x_max - x_min) / (1.0f - 0.0f);
+    //return x_min + (x - 0.0f) * (x_max - x_min) / (1.0f - 0.0f);
+    return x_min + x * (x_max - x_min);
 }
 //transforme [0, nX] en [x_min, x_max] où minx et maxx globaux
 float rerangey(float y) {
-    return y_min + (y - 0.0f) * (y_max - y_min) / (1.0f - 0.0f);
+    //return y_min + (y - 0.0f) * (y_max - y_min) / (1.0f - 0.0f);
+    return y_min + y * (y_max - y_min);
 }
 
 //Fonction à effet de bord sur le monoïde Surf (dans mesh.h/mesh.cpp) : calcule les vertices
@@ -33,6 +36,8 @@ void calculate(int nbX, int nbY){
         for (int j = 0; j < nbY; ++j) {
             float x = rerangex((float)i / (nbX - 1));
             float y = rerangey((float)j / (nbY - 1));
+            //float x = rerangex((float)i);
+            //float y = rerangey((float)j);
             float z = f(x, y);
             surf.vertices.push_back(x);
             surf.vertices.push_back(y);
@@ -58,3 +63,6 @@ void calculate(int nbX, int nbY){
 
 //pour les dérivés (surf.normals) on a une piste ici :
 //https://stackoverflow.com/questions/1559695/implementing-the-derivative-in-c-c
+
+
+//calculate gestion des points non définis

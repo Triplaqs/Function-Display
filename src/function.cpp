@@ -13,7 +13,12 @@ bool edited = false;
 ///////////////////////////////////////////// FUNCTION ///////////////////////////////////////////////// //voir si std::function<> peut apporter ?
 //Fonction de R2 dans R (surface) d'essai:
 float f(float x, float y) {
-    return x*y; //exemple de fonction à singularité en (0,0) : on peut faire mieux, mais c'est pour tester les dérivées
+    if(x==0.0f && y==0.0f){
+        return 1.0f;
+    }
+    else{
+        return (x + y)/(x*y);
+    } 
 }
 
 //transforme [0, nY] en [y_min, y_max] où miny et maxy globaux

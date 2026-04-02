@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <iterator>
 //headers
+#include "utils.h"
 #include "mesh.h"
 #include "function.h"
 #include "camera.h"
@@ -293,6 +294,8 @@ int main(int argc, char* argv[]){
         }
         if(pressR){   
             camera.reset(); 
+            x_min = -15.0f; x_max = 15.0f; y_min = -15.0f; y_max = 15.0f; z_min = 15.0f; z_max = -15.0f;
+            calculate(100, 100);
             //autres trucs à reset
         }
 
@@ -392,7 +395,7 @@ int main(int argc, char* argv[]){
             window_pos_pivot.y = 1.0f;
 
             ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-            ImGui::SetNextWindowSize(ImVec2(400, 150)); // Taille fixe pour être joli
+            ImGui::SetNextWindowSize(ImVec2(450, 250)); // Taille fixe pour être joli
 
             // -- Contenu de la fenêtre --
             ImGui::Begin("Input Panel", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove); // NoDecoration retire la barre de titre bleue
@@ -409,19 +412,24 @@ int main(int argc, char* argv[]){
             bool enterPressed3 = ImGui::InputText("##Input3", yminIB, IM_ARRAYSIZE(yminIB), ImGuiInputTextFlags_EnterReturnsTrue);  
             ImGui::Text("Enter a y-range ending value:");  
             bool enterPressed4 = ImGui::InputText("##Input4", ymaxIB, IM_ARRAYSIZE(ymaxIB), ImGuiInputTextFlags_EnterReturnsTrue);
+            ImGui::Text("Set a maximum height to truncate the display:");  
+            bool enterPressed5 = ImGui::SliderFloat("##Input5", &z_min, 1.0f, 100.0f, "%.1f");
+            ImGui::Text("Set a minimum height to truncate the display:");  
+            bool enterPressed6 = ImGui::SliderFloat("##Input6", &z_max, -100.0f, -1.0f, "%.1f");
+
             // Point 3 : Bouton qui remplace le terminal
             //ImGui::SameLine(); // Met le bouton à droite du champ texte
-            if (ImGui::Button("Edit") || enterPressed) {
+            if (ImGui::Button("Edit") || enterPressed || enterPressed2 || enterPressed3 || enterPressed4 || enterPressed5 || enterPressed6){
                 //position boutton
                 // Convertit le char* en float c++
                 std::string sentence0(xminIB);
-                minx = (float)atof(sentence0.c_str());          
+                x_min = (float)atof(sentence0.c_str());          
                 std::string sentence1(xmaxIB);
-                maxx = (float)atof(sentence1.c_str());
+                x_max = (float)atof(sentence1.c_str());
                 std::string sentence2(yminIB);
-                miny = (float)atof(sentence2.c_str());
+                y_min = (float)atof(sentence2.c_str());
                 std::string sentence3(ymaxIB);
-                maxy = (float)atof(sentence3.c_str());
+                y_max = (float)atof(sentence3.c_str());
                 // Appelle de la fonction de traitement 
                 printf("(x, y) range set to : [%f, %f] x [%f, %f]\n", minx, maxx, miny, maxy); 
                 edited = true;

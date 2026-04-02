@@ -4,22 +4,25 @@
 #include <vector>
 
 //variables globales :
-float x_min = -1.0f, x_max = 1.0f, y_min = -1.0f, y_max = 1.0f;
+float x_min = -15.0f, x_max = 15.0f, y_min = -15.0f, y_max = 15.0f, z_min = 15.0f, z_max = -15.0f;
 //variable de récup pour la fenêtre ImgUI (saisie de texte, string)
-char xminIB[256] = "-1.0"; char xmaxIB[256] = "1.0"; char yminIB[256] = "-1.0"; char ymaxIB[256] = "1.0";
+char xminIB[256] = "-15.0"; char xmaxIB[256] = "15.0"; char yminIB[256] = "-15.0"; char ymaxIB[256] = "15.0"; char zminIB[256] = "15.0"; char zmaxIB[256] = "-15.0";
 //Variale qui tient compte d'une redéfinition :
 bool edited = false;
 
 ///////////////////////////////////////////// FUNCTION ///////////////////////////////////////////////// //voir si std::function<> peut apporter ?
 //Fonction de R2 dans R (surface) d'essai:
 float f(float x, float y) {
-    if(x*x<=0.2f || y*y<=0.2f){
-        return 10;
-    }
-    else{
+    if((x*x<=0.2f || y*y<=0.2f) && (x*y >= 0)){
+        return z_max;
+    } else if((x*x<=0.2f || y*y<=0.2f) && (x*y <= 0)){
+        return z_min;
+    } else{
         return (x + y)/(x*y);
     } 
 }
+
+
 
 //transforme [0, nY] en [y_min, y_max] où miny et maxy globaux
 float rerangex(float x) {
@@ -53,6 +56,13 @@ void calculate(int nbX, int nbY){
             surf.normals.push_back(z);
         }
     }
+    printf("calculate : x : %f\n", surf.vertices[0]);
+    printf("calculate : y : %f\n", surf.vertices[1]);
+    printf("calculate : z : %f\n", surf.vertices[2]);
+    printf("calculate : x_min : %f\n", x_min);
+    printf("calculate : y_min : %f\n", y_min);
+    printf("calculate : x_max : %f\n", x_max);
+    printf("calculate : y_max : %f\n\n", y_max);
     for(int i = 0; i < nbX - 1; ++i) {
         for(int j = 0; j < nbY - 1; ++j) {
             surf.triangles.push_back(i * nbY + j);

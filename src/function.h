@@ -8,9 +8,9 @@
 
 //valeurs globales :
 //les bornes des intervalles de x et y
-extern float x_min, x_max, y_min, y_max;
+extern float x_min, x_max, y_min, y_max, z_min, z_max;
 //variable de récup pour la fenêtre ImgUI (saisie de texte, string)
-extern char xminIB[256]; extern char xmaxIB[256]; extern char yminIB[256]; extern char ymaxIB[256];
+extern char xminIB[256]; extern char xmaxIB[256]; extern char yminIB[256]; extern char ymaxIB[256], zminIB[256], zmaxIB[256];
 //Variale qui tient compte d'une redéfinition :
 extern bool edited;
 

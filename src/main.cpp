@@ -26,6 +26,7 @@
 #include "mesh.h"
 #include "function.h"
 #include "camera.h"
+#include "api_topo.h"
 
 //GESTION FENETRE
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -238,6 +239,8 @@ int main(int argc, char* argv[]){
     float fitScale = (maxRange > 0.0f) ? (2.0f / maxRange) : 1.0f; // mappe la plus grande étendue sur [-1,1]*/
 
     camera.reset();
+    //Test API topo :
+    printf("Elevation at (48.8584, 2.2945) = %.2f meters\n", callElevationAPI(48.8584f, 2.2945f)); // Coordonnées de la Tour Eiffel
 
 //render loop (maintient la fenêtre ouverte, une loop = une frame)
     //se divise en 4 parties : nettoyage, input, render puis cloture
@@ -294,7 +297,7 @@ int main(int argc, char* argv[]){
         }
         if(pressR){   
             camera.reset(); 
-            x_min = -15.0f; x_max = 15.0f; y_min = -15.0f; y_max = 15.0f; z_min = 15.0f; z_max = -15.0f;
+            reset_dom();
             calculate(100, 100);
             //autres trucs à reset
         }
@@ -395,11 +398,11 @@ int main(int argc, char* argv[]){
             window_pos_pivot.y = 1.0f;
 
             ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-            ImGui::SetNextWindowSize(ImVec2(450, 250)); // Taille fixe pour être joli
+            ImGui::SetNextWindowSize(ImVec2(550, 400)); // Taille fixe pour être joli
 
             // -- Contenu de la fenêtre --
             ImGui::Begin("Input Panel", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove); // NoDecoration retire la barre de titre bleue
-
+            ImGui::Text("PRESS H TO HIDE THIS WINDOW");
             ImGui::Text("Enter a x-range starting value:");
 
             // Point 2 : Input Text

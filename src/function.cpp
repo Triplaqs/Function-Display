@@ -1,12 +1,13 @@
 #include "utils.h"
 #include "mesh.h"
+#include "api_topo.h"
 #include "function.h"
 #include <vector>
 
 //variables globales :
-float x_min = -15.0f, x_max = 15.0f, y_min = -15.0f, y_max = 15.0f, z_min = 15.0f, z_max = -15.0f;
+float x_min = -15.0f, x_max = 15.0f, y_min = -15.0f, y_max = 15.0f, z_min = 15.0f, z_max = -15.0f, px_ctr = 0.0f, py_ctr = 0.0f, pz_ctr = 0.0f;
 //variable de récup pour la fenêtre ImgUI (saisie de texte, string)
-char xminIB[256] = "-15.0"; char xmaxIB[256] = "15.0"; char yminIB[256] = "-15.0"; char ymaxIB[256] = "15.0"; char zminIB[256] = "15.0"; char zmaxIB[256] = "-15.0";
+char xminIB[256] = "-15.0"; char xmaxIB[256] = "15.0"; char yminIB[256] = "-15.0"; char ymaxIB[256] = "15.0"; char zminIB[256] = "15.0"; char zmaxIB[256] = "-15.0"; char pxctrIB[256] = "0.0"; char pyctrIB[256] = "0.0"; char pzctrIB[256] = "0.0";
 //Variale qui tient compte d'une redéfinition :
 bool edited = false;
 
@@ -20,6 +21,28 @@ float f(float x, float y) {
     } else{
         return (x + y)/(x*y);
     } 
+}
+
+float df(float x, float y) {
+    float h = 0.01f; // Pas pour la dérivée numérique
+    float fxh = f(x + h, y);
+    float fxmh = f(x - h, y);
+    float df_dx = (fxh - fxmh) / (2 * h); // Dérivée centrale en x
+
+    float fyh = f(x, y + h);
+    float fymh = f(x, y - h);
+    float df_dy = (fyh - fymh) / (2 * h); // Dérivée centrale en y
+
+    return sqrt(df_dx * df_dx + df_dy * df_dy); // Norme du gradient
+}
+
+float fr(float x, float y){
+    return callElevationAPI(x, y);
+}
+
+void reset_dom(){
+    x_min = -15.0f; x_max = 15.0f; y_min = -15.0f; y_max = 15.0f; z_min = 15.0f; z_max = -15.0f, px_ctr = 0.0f, py_ctr = 0.0f, pz_ctr = 0.0f;
+    strcpy(xminIB, "-15.0"); strcpy(xmaxIB, "15.0"); strcpy(yminIB, "-15.0"); strcpy(ymaxIB, "15.0"); strcpy(zminIB, "15.0"); strcpy(zmaxIB, "-15.0"); strcpy(pxctrIB, "0.0"); strcpy(pyctrIB, "0.0"); strcpy(pzctrIB, "0.0");
 }
 
 
@@ -47,6 +70,7 @@ void calculate(int nbX, int nbY){
             //float x = rerangex((float)i);
             //float y = rerangey((float)j);
             float z = f(x, y);
+            float zd = df(x, y);
             surf.vertices.push_back(x);
             surf.vertices.push_back(y);
             surf.vertices.push_back(z);

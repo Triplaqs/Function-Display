@@ -11,6 +11,7 @@ project("Function-Display" C CXX)
 
 # glfw3 should be installed on your system prior to this line for it to work
 find_package(glfw3 REQUIRED)
+find_package(CURL REQUIRED)
 
 
 
@@ -39,6 +40,7 @@ add_executable(out
     src/mesh.cpp
     src/function.cpp
     src/camera.cpp
+    src/api_topo.cpp
     src/main.cpp
     ${IMGUI_SOURCES}
 )
@@ -50,8 +52,9 @@ add_executable(out
 target_include_directories(out PRIVATE
     src
     Imgui
+    includes
 )
 
 
 # Link "glad" and "glfw" to your "out" executable
-target_link_libraries(out glad glfw)
+target_link_libraries(out glad glfw ${CURL_LIBRARIES})
